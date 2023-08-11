@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AppManagement\UserController;
+use App\Http\Controllers\AppManagement\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,11 +33,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/home', [HomeController::class, 'index']);
 
     Route::prefix('app-management')->group(function () {
-        Route::resource('user', UserController::class)->except([
-            'show'
-        ]);
-        Route::prefix('user')->group(function () {
-            Route::get('get-role',[UserController::class, 'get_role']);
-        });
+        Route::resource('user', UserController::class);
+
+        Route::get('/role/temp', [RoleController::class, 'temp']);
     });
 });

@@ -52,7 +52,7 @@ class UserController extends Controller
     public function get_role()
     {
         $role = Role::get();
-        //die('tes');
+        die('tes');
 
         return response()->json($role, 200);
     }
@@ -76,7 +76,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|max:100|unique:users',
+            'email' => 'required|max:100|unique:users,email,NULL,id,deleted_at,NULL',
             'password' => 'required|min:6|max:20',
             'name' => 'required|max:100',
             'photo' => 'mimes:jpeg,jpg,png|max:5120'
@@ -181,7 +181,10 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        //
+        
+        $user = User::with('roles')->where('id', $id)->firstOrFail();
+
+        return response()->json($user, 200);
     }
 
     /**
@@ -207,7 +210,7 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|max:100|unique:users,email,'.$id,
+            'email' => 'required|max:100|unique:users,email,'.$id.',id,deleted_at,NULL',
             'name' => 'required|max:100',
             'photo' => 'mimes:jpeg,jpg,png|max:5120'
         ], [
@@ -327,6 +330,17 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        return response()->json(DB::transaction(function () use ($id) {
+            $user = User::findOrFail($id);
+
+            $user->roles()->detach();
+
+            $user->delete();
+
+            $data['status'] = 'success';
+            $data['message'] = 'Success delete data user';
+
+            return $data;
+        }), 200);
     }
 }
